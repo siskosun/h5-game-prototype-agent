@@ -1,0 +1,12 @@
+interface:
+  display_name: H5 Game Prototype Agent
+  short_description: Build, debug, verify, and deliver 2D H5 game vertical slices
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

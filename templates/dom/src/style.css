@@ -1,0 +1,78 @@
+/* DOM 模板默认样式：竖版手机容器（Prototype Contract §9）。
+   桌面浏览器打开时居中显示为手机竖屏；真机上全屏。 */
+
+/* ============================== UI 基线（勿违反，见 SKILL.md UX baseline）==
+ * 禁用：横向进度/填充条（.bar/.timer-bar/.timer-fill）；
+ *       网格单元内 N/M 数字进度（改用纹理/色块状态 + title 提示）；
+ *       依赖可见滚动条的布局（容器隐藏滚动条）。
+ * 替代：时间压力 → 大数字倒计时 + 颜色态（≤20% 红闪）；
+ *       总体进度 → 百分比文字。
+ * 按钮：触控 ≥44px；主 CTA ≤48px、宽度自适应；行内小按钮 30px。
+ * 反馈三件套：每个花钱动作 = toast + 持久化结果（状态行/卡片摘要/网格标记）+ 拒绝原因。
+ * ======================================================================= */
+
+:root {
+  --bg: #10131f;
+  --panel: #1a1f33;
+  --ink: #e8ecf5;
+  --dim: #8b94ab;
+  --accent: #4da3ff;
+  --line: #2a3450;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #05070d; /* 容器外的桌面背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* 竖版手机屏幕容器：固定 9:16 比例（桌面最大宽 430px，高度由比例与视口约束），
+   内容在手机屏幕内部滚动；桌面浏览器打开时呈现为居中的手机屏幕，而非长条。 */
+#app {
+  width: min(430px, 100vw);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+#app::-webkit-scrollbar { display: none; }
+
+/* 真机/窄竖屏视口：占满全屏 */
+@media (max-aspect-ratio: 9/16) {
+  #app {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    box-shadow: none;
+  }
+}
+
+.screen {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }

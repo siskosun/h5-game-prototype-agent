@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "id": "example",
+      "sourceFile": "game/assets/example.png",
+      "runtimePath": "assets/example.png",
+      "type": "image",
+      "role": "example",
+      "loader": "project-specific",
+      "expectedScreen": "game",
+      "expectedNode": "example",
+      "required": false
+    }
+  ]
+}
