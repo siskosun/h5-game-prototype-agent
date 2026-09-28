@@ -1,0 +1,22 @@
+{
+  "name": "h5-game-mechanic-probe-template",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "tsx --test tests/*.test.ts",
+    "build": "tsc --noEmit && vite build",
+    "build:qa": "cross-env VITE_QA=1 npm run build",
+    "probe:check": "npm run build:qa && node qa/probe-check.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "playwright": "^1.55.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0"
+  }
+}

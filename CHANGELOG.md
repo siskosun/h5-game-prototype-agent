@@ -1,16 +1,17 @@
 # Changelog
 
-## 0.1 - 2026-08-20
+## 0.2.0 - 2026-09-28
 
-- Reset the version to 0.1 as a deliberate structural reboot.
-- Replaced the fixed full-pipeline mindset with task routing: NEW_BUILD, FEATURE_CHANGE, BUGFIX, POLISH_QA, and RELEASE.
-- Added inspect-before-edit behavior for existing projects and a minimum-change preference.
-- Added reproduce-before-repair as the default for reproducible bugs.
-- Added minimum-sufficient-verification guidance while preserving mandatory player-facing evidence for player-facing claims.
-- Added explicit task-boundary and no-over-engineering rules.
-- Added measure-before-optimize performance discipline.
-- Preserved conditional Requirement/Design-Fork grilling instead of adding a static genre questionnaire.
-- Preserved Foundation Slice, gameplay distinctness, mechanic curriculum, meaningful-choice checks, deterministic production-core headless simulation, mobile/visual semantic QA, save versioning, modifier policy, runtime asset proof, real-browser playthrough, and hash-bound release evidence.
-- Simplified publishing into one user-selected DeliveryTarget: LOCALHOST_URL (127.0.0.1), ZIP_BUNDLE, or SINGLE_HTML. No target is silently defaulted.
-- Consolidated the documentation into seven focused references and removed redundant/overlapping guidance.
-- Removed obsolete duplicate metadata, old examples, and low-value helper scripts that did not define a reusable quality boundary.
+- Add completion level `PROBE` beside the existing `SLICE` workflow while keeping task modes independent.
+- Add deterministic realtime/manual clocks and seeded pure-state RNG to DOM and Phaser templates.
+- Add QA interface v1 with seed/scenario/clock/input-log controls and production-build isolation.
+- Replace the non-runnable simulation skeleton with real TypeScript tests that import the production core.
+- Add the graybox PROBE scaffold, Playwright player path, success/failure/retry/edge checks, degeneracy detection, screenshots, and WebM evidence.
+- Add `probe_card.py`, `probe_log.py`, and `validate_probe_report.py`.
+- Add probe-to-SLICE and game-exp handoff contracts without moving human lifecycle gates into this Skill.
+- Add runtime-only skill packaging and Windows/Linux CI.
+- Remove model/tool-specific operating language.
+
+## 0.1
+
+Initial H5 vertical-slice Skill with DOM and Phaser templates, deterministic bridge shape, release validation, and design/testing references.

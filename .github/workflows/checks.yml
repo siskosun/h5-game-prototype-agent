@@ -1,0 +1,64 @@
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26.10.0"
+      - name: Python unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Template integration
+        run: python dev/check_templates.py
+      - name: Runtime skill package
+        run: python dev/build_skill_zip.py
+
+  probe-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26.10.0"
+      - name: Install probe dependencies
+        working-directory: templates/probe
+        run: npm ci
+      - name: Install Chromium
+        working-directory: templates/probe
+        run: npx playwright install --with-deps chromium
+      - name: Probe E2E and known-bad fixtures
+        run: python dev/check_probe_e2e.py
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-evidence-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            templates/probe/.probe/
+            tests/fixtures/spam-wins/.probe/
+            tests/fixtures/spam-intended/.probe/

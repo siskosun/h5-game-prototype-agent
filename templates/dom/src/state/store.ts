@@ -1,9 +1,4 @@
-// One authoritative state store. All game logic lives here as a pure
-// reducer, independent of DOM/rendering, so tests can drive it directly
-// with node/tsx. Replace the demo mechanics with the prototype's own.
-//
-// The store exposes `dispatch(action)` and `advanceTime(ms)`; the test
-// bridge in core/TestBridge.ts maps them onto window.*.
+import { nextRandom, normalizeSeed } from "../core/rng";
 
 export type Mode = "TITLE" | "PLAY" | "RESULT";
 
@@ -13,31 +8,42 @@ export interface GameState {
   timeMs: number;
   result: "win" | "lose" | null;
   visibleActions: string[];
+  seed: number;
+  rngState: number;
+  lastRandom: number | null;
 }
 
 export type Action =
   | { type: "START" }
-  | { type: "TAP" } // demo primary action; replace with contract actions
+  | { type: "TAP" }
+  | { type: "ROLL" }
   | { type: "RESTART" }
   | { type: "__TICK"; ms: number }
-  | { type: "__RESET" };
+  | { type: "__RESET"; seed?: number };
 
-/** Demo rules: reach 10 taps within 30 seconds. Replace per contract. */
 export const WIN_SCORE = 10;
 export const TIME_LIMIT_MS = 30000;
 
-export const initialState: GameState = {
-  mode: "TITLE",
-  score: 0,
-  timeMs: 0,
-  result: null,
-  visibleActions: ["START"]
-};
+export function createInitialState(seed = 1): GameState {
+  const normalized = normalizeSeed(seed);
+  return {
+    mode: "TITLE",
+    score: 0,
+    timeMs: 0,
+    result: null,
+    visibleActions: ["START"],
+    seed: normalized,
+    rngState: normalized,
+    lastRandom: null
+  };
+}
+
+export const initialState: GameState = createInitialState();
 
 export function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "START":
-      return { ...initialState, mode: "PLAY", visibleActions: ["TAP"] };
+      return { ...createInitialState(state.seed), mode: "PLAY", visibleActions: ["TAP"] };
     case "TAP": {
       if (state.mode !== "PLAY") return state;
       const score = state.score + 1;
@@ -46,8 +52,12 @@ export function reducer(state: GameState, action: Action): GameState {
       }
       return { ...state, score };
     }
+    case "ROLL": {
+      const [value, nextState] = nextRandom(state);
+      return { ...nextState, lastRandom: value };
+    }
     case "RESTART":
-      return { ...initialState };
+      return createInitialState(state.seed);
     case "__TICK": {
       if (state.mode !== "PLAY") return state;
       const timeMs = state.timeMs + Math.max(0, action.ms);
@@ -57,7 +67,7 @@ export function reducer(state: GameState, action: Action): GameState {
       return { ...state, timeMs };
     }
     case "__RESET":
-      return { ...initialState };
+      return createInitialState(action.seed ?? state.seed);
     default:
       return state;
   }

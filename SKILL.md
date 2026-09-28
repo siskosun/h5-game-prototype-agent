@@ -1,246 +1,165 @@
 ---
 name: h5-game-prototype-agent
-description: Build, modify, debug, validate, and deliver 2D H5 game vertical slices with an evidence-driven workflow. Use for new H5 prototypes, existing H5 feature work, bug fixes, gameplay/content iteration, mobile interaction and visual QA, and release packaging. Inspect existing projects before editing, clarify only material user-owned decisions, ask for the delivery target when a runnable deliverable is required (127.0.0.1 local URL, ZIP bundle, or single HTML), keep authoritative game logic testable outside rendering, use deterministic headless simulation plus real-browser validation, and bind release evidence to the exact final artifact.
+description: Build, modify, debug, validate, and deliver 2D H5/web mini-games, including fast gameplay experiments and mechanic probes. Use for H5, web games, 网页小游戏, 快速试玩法, 玩法初筛, mechanic probe, browser gameplay, mobile interaction, bug fixes, polish, vertical slices, Playwright QA, and tested delivery.
 ---
 
-# H5 Game Vertical Slice Agent
+# H5 Game Prototype Agent
 
-Produce a playable, verifiable H5 result rather than a plausible-looking code dump.
+Produce a playable, verifiable H5 result rather than a plausible code dump. Keep one authoritative gameplay core and verify only claims that were actually exercised.
 
-Version: **0.1**.
+## 1. Choose completion level separately from task mode
 
-Run on the built-in `standard` agent preset. Keep H5-specific behavior in this skill.
+Choose one completion level:
 
-## 1. Operating principles
+- **PROBE** — fast graybox test of one gameplay hypothesis.
+- **SLICE** — small but complete vertical slice or delivery-quality H5 build.
 
-- Treat the user's explicit goal as the priority anchor.
-- Inspect real project state before editing an existing project. Preserve its stack, structure, assets, conventions, input model, and build flow unless evidence shows they block the goal.
-- Prefer the smallest complete change that closes the player-facing loop.
-- Act and verify instead of speculating when tools, runtime, logs, screenshots, tests, or files can answer the question.
-- Use the cheapest sufficient verification for the current hypothesis, but never let a lower-level check substitute for the player-facing evidence the feature actually requires.
-- Avoid scope creep. Fix a discovered issue when it blocks the goal or makes the result incorrect/unverifiable; otherwise record it as follow-up and continue.
-- Avoid over-engineering. Do not introduce frameworks, abstractions, dependencies, or rewrites without a concrete need.
-- Ask the user only for material design, scope, risk, or delivery decisions that cannot be resolved from evidence.
+Choose task mode independently:
 
-Read [references/workflow.md](references/workflow.md) first for task routing and gate selection.
+- `NEW_BUILD`
+- `FEATURE_CHANGE`
+- `BUGFIX`
+- `POLISH_QA`
+- `RELEASE`
 
-## 2. Route by task mode
+Examples: a bug in a mechanic probe is `BUGFIX + PROBE`; a polished new browser game is `NEW_BUILD + SLICE`.
 
-Classify the current request before choosing work:
+Select **PROBE** when the request says or implies batch exploration, fast trials, initial screening, validating one mechanic, 快速试玩法, 玩法初筛, or mechanic probe. Select **SLICE** for complete/playable-for-others/near-release/vertical-slice requests. For an ambiguous new project, default to PROBE and state that default in the first reply; the user may override it. Never re-ask after the level is resolved.
 
-- `NEW_BUILD`: new prototype or major redesign.
-- `FEATURE_CHANGE`: add or materially change gameplay in an existing project.
-- `BUGFIX`: reproduce and repair incorrect behavior.
-- `POLISH_QA`: controls, layout, visuals, audio, feel, responsiveness, or quality work without changing the accepted core loop.
-- `RELEASE`: package, smoke-test, and deliver an already accepted build.
+For PROBE, read [mechanic probe](references/mechanic-probe.md). For SLICE or non-probe work, read [workflow](references/workflow.md).
 
-Do not force every task through the full new-project pipeline. Use the smallest set of affected gates that can prove the requested result. A `RELEASE` task always runs the final artifact gate.
+## 2. PROBE is intentionally narrower
 
-## 3. Resolve material decisions before implementation
+In PROBE:
 
-For a new build or a feature that changes architecture/gameplay, create `spec/project_profile.md` from [templates/project_profile.md](templates/project_profile.md).
+- use `LOCALHOST_URL`; do not ask for DeliveryTarget;
+- use `probe_card.md`, not `gameplay_contract.md`;
+- build one repeatable core loop, not 2-4 foundation scenarios;
+- run fixed checks plus at most 50 seeded smoke runs, not the SLICE-scale simulation target;
+- stay graybox; do not request visual references or begin art direction;
+- compute build identity/digests only when handing the probe to game-exp or another explicit evidence consumer;
+- ask only questions that materially change the hypothesis.
 
-If a runnable deliverable is part of the current request and the user has not already specified the publishing form, ask once for exactly one `DeliveryTarget`:
+Still require:
 
-- `LOCALHOST_URL`: run from a local server such as `http://127.0.0.1:8000/`.
-- `ZIP_BUNDLE`: deliver a ZIP project/build with exact start instructions.
-- `SINGLE_HTML`: deliver one self-contained HTML file.
+- one authoritative gameplay implementation;
+- the QA/test interface;
+- a real browser player path using real input;
+- evidence only for checks actually executed;
+- human judgment for fun/preference.
 
-Do not silently default to single HTML or ZIP. Do not re-ask when the user already chose.
+Do not let automated checks produce a human PASS.
 
-Use conditional Requirement/Design-Fork grilling only when different answers would produce materially different games. Resolve technical facts yourself before asking. Do not turn routine implementation into an interview. Read [references/design-contract.md](references/design-contract.md).
+## 3. For SLICE, preserve the existing contract workflow
 
-When adapting a reference game, separate:
-
-`transferable mechanics -> non-transferable surface -> originality delta`
-
-Do not stop at a theme swap.
-
-## 4. Contract before broad implementation
-
-For `NEW_BUILD` and material `FEATURE_CHANGE`, create `spec/gameplay_contract.md` from [templates/gameplay_contract.md](templates/gameplay_contract.md).
-
-Normalize every P0 mechanic as:
+For a new or materially changed SLICE, create `spec/project_profile.md` and `spec/gameplay_contract.md`. Normalize P0 mechanics as:
 
 `Trigger -> Preconditions -> Player Action -> State Delta -> Feedback -> Termination`
 
-Require:
+Build one complete P0 loop before scaling content. Use 2-4 representative scenarios, keep logic testable outside rendering, run the intended browser target early, and bind release evidence to the exact final artifact. See [design contract](references/design-contract.md), [implementation testing](references/implementation-testing.md), [player QA](references/player-qa.md), and [delivery/release](references/delivery-release.md).
 
-- one dominant loop;
-- explicit state and legal actions;
-- numeric/data envelope;
-- deterministic acceptance tests;
-- meaningful-choice audit or explicit N/A;
-- mechanic curriculum for multi-level/encounter content or explicit N/A;
-- headless simulation contract;
-- persistence contract or explicit N/A;
-- out-of-scope list.
+## 4. Keep time and randomness reproducible
 
-Run:
+For new templates and mechanics that depend on time or randomness:
 
-`python <skill-root>/scripts/validate_gameplay_contract.py <workspace>/spec/gameplay_contract.md`
+- keep `realtime | manual` clock modes;
+- in manual mode, browser animation/update loops must not advance gameplay time;
+- advance time only through the deterministic test hook;
+- keep seeded RNG state in the authoritative game state;
+- do not call `Math.random()` for gameplay outcomes that need reproducibility.
 
-Do not scale content while it fails.
+The bundled DOM, Phaser, and PROBE templates implement this contract.
 
-## 5. Build a Foundation Slice before scaling
+## 5. Keep the QA bridge out of production
 
-For new builds and content-heavy feature work, first implement one complete P0 player loop, then only **2-4 representative scenarios**.
+Preserve:
 
-Before generating large pools, many roles, or 10+ levels, prove:
+- `render_game_to_text`;
+- `advanceTime(ms)`;
+- `window.__GAME_API__.dispatch/getState/reset`.
 
-- the core loop is actually playable;
-- newly introduced mechanics change the decision/state-transition vocabulary rather than only fiction or art;
-- the intended scenario requires the new mechanic when it is presented as a teaching step;
-- primary mobile interaction is practical;
-- mechanically distinct roles are legible at minimum actual gameplay size without color-only identity;
-- smallest/largest representative layouts keep critical objects visible;
-- the authoritative core can be driven headlessly;
-- applicable save behavior is stable.
+QA interface v1 also exposes `setSeed`, `setScenario`, `setClockMode`, `getInputLog`, and `version: "1"`.
 
-Read [references/design-contract.md](references/design-contract.md) and [references/player-qa.md](references/player-qa.md).
+Record browser/player actions as `PLAYER`; programmatic `dispatch` as `INJECTED`; Playwright touch emulation as `EMULATED_TOUCH` in browser evidence.
 
-## 6. Keep gameplay logic testable outside rendering
+Install the bridge only in Vite dev mode or when `VITE_QA=1` (for `build:qa`). A normal `npm run build` must not contain `__GAME_API__`.
 
-Preserve one authoritative gameplay implementation. UI/rendering code should translate real input into core actions and render state; it must not contain a second copy of gameplay formulas.
-
-Expose a browser test bridge:
-
-```js
-window.render_game_to_text = () => JSON.stringify(currentState);
-window.advanceTime = (ms) => { /* deterministic step */ };
-window.__GAME_API__ = { dispatch(action) {}, getState() {}, reset() {} };
-```
-
-When persistence exists, also expose test-only save/load/meta hooks.
-
-Create a Node-runnable simulation harness that drives the **same production core**. Start from [templates/sim-harness.mjs](templates/sim-harness.mjs). Prefer direct core import; use thin DOM/storage/timer stubs only when necessary.
-
-Write `logs/sim_report.json` and run:
-
-`python <skill-root>/scripts/validate_sim_report.py <workspace>/logs/sim_report.json`
-
-Do not continue broad expansion while runtime errors, invariant failures, or softlocks are non-zero.
-
-Read [references/implementation-testing.md](references/implementation-testing.md).
-
-## 7. Expand content only after foundation/testability pass
-
-When content expands:
-
-- reuse mechanics through practice, combination, transfer, and mastery instead of introducing one disposable role after another;
-- reject fake choices where one option strictly dominates another with no meaningful compensation;
-- use seeded/injected RNG for reproducibility;
-- stress declared modifier stacking rules when modifiers exist;
-- scan generated pools for duplicates, illegal entries, empty slots, dead ends, and unreachable required content;
-- preserve first failing seed and action trace for simulation failures.
-
-Use `scripts/validate_choice_space.py` when structured multi-option choices are part of the design.
-
-## 8. Work in short verified loops
+## 6. Work in short verified loops
 
 Use:
 
 `Observe -> Implement -> Run -> Play/Inspect -> Validate -> Adjust`
 
-Break complex work into independently verifiable micro-loops. Do not batch many unrelated changes before the first run.
+For a reproducible bug, capture failing evidence first, apply the smallest responsible fix, rerun the same path, then affected regressions. Do not broaden a repair merely because another improvement is possible.
 
-For feel-sensitive tuning, change one experiential variable or one tightly coupled bundle, play immediately, then keep or revert. Do not use feel tuning to bypass an accepted gameplay contract.
+Use the cheapest sufficient check for each claim, but never substitute a logic test for browser input/layout behavior or an automated policy for human experience.
 
-For reproducible bugs, capture failing evidence **before** editing, apply the smallest responsible fix, rerun the identical reproduction path, then run affected regression checks.
+## 7. Browser evidence
 
-Read [references/debug-repair.md](references/debug-repair.md).
-
-## 9. Validate player-facing behavior at the player-facing layer
-
-Use real browser interaction when the feature is experienced through the browser. Logic tests alone cannot prove layout, input, asset loading, storage restrictions, audio unlock, or click/touch behavior.
-
-For mobile-first new projects, default to 390x844 with 360x800 as the minimum QA viewport unless the user/project defines another target. For existing projects, preserve the established target unless asked to change it.
-
-Verify relevant evidence, including:
+For player-facing browser behavior, verify at the browser layer:
 
 - console/page/network errors;
-- real input path and completed loop;
-- critical-object visibility;
-- touch gesture behavior and scroll/zoom conflicts;
+- real input and a complete player path;
+- target viewport and critical visibility;
+- click/touch/keyboard behavior as applicable;
 - screenshots for visual/layout claims;
-- semantic role legibility at minimum rendered size;
-- runtime asset rendering, not just file existence;
-- save/reload paths when persistence exists;
-- audio/motion behavior when present.
+- save/reload when persistence exists;
+- audio/motion when promised.
 
-Read [references/player-qa.md](references/player-qa.md) and [references/persistence.md](references/persistence.md).
+Mobile-first defaults to 390x844 unless the project specifies another target. Playwright touch is emulated evidence, not proof of physical-device feel.
 
-## 10. Measure performance before optimizing
+## 8. PASS after a probe has two exits
 
-Do not optimize from code appearance alone. For performance work:
+After a real human `PASS`:
 
-`capture baseline -> identify bottleneck -> change -> remeasure`
+- upgrade to SLICE using [probe to slice](references/probe-to-slice.md); or
+- hand the probe to game-exp using [game-exp integration](references/game-exp-integration.md).
 
-Use the same metric and scenario before and after. If no measurable bottleneck is established, do not broaden the optimization effort.
+Do not rewrite the frozen hypothesis/kill criteria during the handoff merely to make the next stage easier.
 
-## 11. Choose the delivery path explicitly
+## 9. Evidence and verdicts
 
-Create `spec/delivery_contract.md` from [templates/delivery_contract.md](templates/delivery_contract.md) when a runnable deliverable is in scope.
+For PROBE:
 
-Validate it with:
+- `agent_verdict`: `READY_FOR_PLAYTEST | MACHINE_REJECT | UNCERTAIN`;
+- `human_verdict`: `PENDING | PASS | REJECT | UNCERTAIN`.
 
-`python <skill-root>/scripts/validate_delivery.py <workspace>/spec/delivery_contract.md`
+An agent never sets PASS. A harness/environment failure is `UNCERTAIN`, not evidence that the mechanic should be rejected.
 
-Follow [references/delivery-release.md](references/delivery-release.md).
+For SLICE, report only executed evidence and the exact artifact/hash when applicable. Never label an unrun gate PASS.
 
-## 12. Bind release QA to the exact final result
+## 10. Utilities
 
-Never claim release readiness from tests against a sibling working copy.
+From the skill root:
 
-Freeze the final result, compute its SHA-256 (or deterministic directory snapshot hash for `LOCALHOST_URL`), run the promised smoke/playthrough against that exact result, and record the same hash in browser/release evidence.
+```bash
+python scripts/probe_card.py validate PROBE/probe_card.md
+python scripts/probe_card.py freeze PROBE/probe_card.md
+python scripts/probe_card.py check PROBE/probe_card.md
+python scripts/probe_log.py search KEYWORD
+python scripts/validate_probe_report.py PROBE/.probe/report.json --card PROBE/probe_card.md
+python scripts/validate_gameplay_contract.py WORKSPACE/spec/gameplay_contract.md
+python scripts/validate_release_artifact.py ARTIFACT --target LOCALHOST_URL --evidence browser_report.json
+```
 
-Run:
+The PROBE scaffold supports:
 
-`python <skill-root>/scripts/validate_release_artifact.py <artifact-or-server-root> --target <LOCALHOST_URL|ZIP_BUNDLE|SINGLE_HTML> --evidence <browser_report.json>`
-
-Any post-QA edit invalidates previous release evidence.
-
-## 13. Persistence rules
-
-When persistence exists:
-
-- separate run state from meta state when both concepts exist;
-- include schema version from the first implementation;
-- shape-validate loaded data;
-- migrate compatible old saves or reject them safely;
-- test save -> reload -> continue;
-- reject corrupt data safely;
-- prevent duplicate settlement/rewards for the same completed run.
-
-Use [templates/save_matrix.md](templates/save_matrix.md) and [references/persistence.md](references/persistence.md).
-
-## 14. Bounded repair and autonomy
-
-Handle low-risk, reversible implementation details autonomously. Stop and ask when the decision materially changes core gameplay, accepted art/design direction, scope, irreversible assets, major architecture, significant dependencies, or external credentials/resources.
-
-For a blocker, try evidence-producing repairs rather than repeated guesses. Stop after five repair rounds on the same blocker when no new evidence is being produced; report the reproducible state instead of broadening the rewrite.
-
-Use `scripts/experiment_log.py` for non-trivial tuning/debug experiments that may span runs or sessions.
-
-## 15. Delivery report
-
-Report only executed evidence. State:
-
-- what changed;
-- how it was actually verified;
-- pass/fail/partial results;
-- what remains unverified;
-- how to open/run the result;
-- final artifact/hash when applicable.
-
-Never report a gate as PASS when it was not run.
+```bash
+npm ci
+npm test
+npm run build
+npm run probe:check
+```
 
 ## Reference map
 
-- Task routing and affected-gate matrix: [references/workflow.md](references/workflow.md)
-- Requirements, references, mechanics, choices, curriculum, foundation: [references/design-contract.md](references/design-contract.md)
-- Architecture, deterministic core, Node harness, RNG/modifiers: [references/implementation-testing.md](references/implementation-testing.md)
-- Browser, mobile, visuals, assets, audio/motion: [references/player-qa.md](references/player-qa.md)
-- Save schema and navigation behavior: [references/persistence.md](references/persistence.md)
-- Publishing target and release evidence: [references/delivery-release.md](references/delivery-release.md)
-- Reproduction, verification selection, repair, experiments, performance: [references/debug-repair.md](references/debug-repair.md)
+- PROBE eight-step workflow, time box, degeneracy, human testing: [mechanic probe](references/mechanic-probe.md)
+- Probe -> SLICE: [probe to slice](references/probe-to-slice.md)
+- Probe -> game-exp: [game-exp integration](references/game-exp-integration.md)
+- SLICE routing: [workflow](references/workflow.md)
+- Gameplay contract/design: [design contract](references/design-contract.md)
+- Core/tests/RNG: [implementation testing](references/implementation-testing.md)
+- Browser/mobile/player QA: [player QA](references/player-qa.md)
+- Persistence: [persistence](references/persistence.md)
+- Release evidence: [delivery/release](references/delivery-release.md)
+- Debug/repair: [debug repair](references/debug-repair.md)
