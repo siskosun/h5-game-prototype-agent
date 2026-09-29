@@ -15,7 +15,18 @@ Deliver one self-contained runnable HTML file. Do not introduce this shape unles
 
 Do not silently default between these targets.
 
-If the user explicitly requests online deployment, handle it as a project-specific extension rather than silently adding a deployment service to this default local-delivery contract.
+If the user explicitly requests online deployment, handle it as a project-specific extension rather than silently adding a deployment service to this default local-delivery contract. The one standard exception is a game-exp handoff that explicitly sets `delivery_request.prefer_shareable_url=true`: for a public repository, use the bundled immutable GitHub Pages publisher and then browser-verify the deployed URL before reporting it as a verified `SHAREABLE_URL`.
+
+## GitHub Pages delivery for game-exp
+
+This path is intentionally narrow. It exists to turn an already-verified static H5 build into a durable cross-device URL without adding another hosting service.
+
+- Requires a public GitHub repository and authenticated `gh`.
+- Uses a dedicated `gh-pages` branch and refuses to replace a different existing Pages configuration.
+- Publishes under `play/<result_source_sha>/`; published version paths are immutable.
+- Vite builds must use relative asset paths. New bundled templates set `base: "./"`.
+- The publisher's marker/index check proves deployment identity, not gameplay quality. A real browser player-input smoke on the returned URL is still required before `verified=true`.
+- Pages failure does not create a game-exp Review failure; return the strongest actually verified fallback instead.
 
 ## Release freeze
 

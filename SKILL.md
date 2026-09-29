@@ -128,7 +128,7 @@ An agent never sets PASS. A harness/environment failure is `UNCERTAIN`, not evid
 
 For SLICE, report only executed evidence and the exact artifact/hash when applicable. Never label an unrun gate PASS.
 
-For a game-exp-managed implementation pass, return one structured `iteration_delivery` object after completed source work. Include 1-8 player-visible changes, a verified playable descriptor or explicit `MISSING`, 1-3 playtest focus points, `producer=h5-game-prototype-agent`, optional build identity, and an optional real prior Candidate id. It is participant-reported implementation context only and never authorizes Review, PROMISING, SELECTED, REJECTED, Integration, or Archive.
+For a game-exp-managed implementation pass, return one structured `iteration_delivery` object after completed source work. Include 1-8 player-visible changes, a verified playable descriptor or explicit `MISSING`, 1-3 playtest focus points, `producer=h5-game-prototype-agent`, optional build identity, and an optional real prior Candidate id. When the game-exp handoff requests a shareable URL for a public repository, prefer the bundled immutable GitHub Pages publisher after local build/player QA, then run the real browser smoke against the deployed URL before setting `verified=true`. It is participant-reported implementation context only and never authorizes Review, PROMISING, SELECTED, REJECTED, Integration, or Archive.
 
 ## 10. Utilities
 
@@ -142,6 +142,7 @@ python scripts/probe_log.py search KEYWORD
 python scripts/validate_probe_report.py PROBE/.probe/report.json --card PROBE/probe_card.md
 python scripts/validate_gameplay_contract.py WORKSPACE/spec/gameplay_contract.md
 python scripts/validate_release_artifact.py ARTIFACT --target LOCALHOST_URL --evidence browser_report.json
+python scripts/publish_github_pages.py --repo owner/repo --source dist --version-key <source_sha> --producer h5-game-prototype-agent --require-relative-entrypoint --json
 ```
 
 The PROBE scaffold supports:
