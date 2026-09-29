@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3 - 2026-09-29
+
+- Stop explicitly requesting a second GitHub Pages build after updating `gh-pages`; the branch update already triggers deployment.
+- Remove duplicate same-commit Pages builds observed in the live canary while preserving immutable-path and served-marker verification.
+
 ## 0.2.2 - 2026-09-29
 
 - Add a public-repository GitHub Pages publisher for immutable versioned H5 playables under `play/<result_source_sha>/`.
