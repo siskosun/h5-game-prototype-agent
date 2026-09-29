@@ -83,6 +83,30 @@ Rules:
 
 When releasing the game-exp Work Claim, place this object under `delivery`. game-exp may project it as `experiment_panel.delivery_card`.
 
+## Public shareable playable
+
+When the game-exp handoff includes `delivery_request.prefer_shareable_url=true`, the repository is public, and the final production build has passed the normal local browser/player checks:
+
+1. keep the production Vite build subpath-safe; the bundled templates use `base: "./"`;
+2. use the exact pushed `result_source_sha` as the immutable version key;
+3. publish the frozen `dist/` directory with:
+
+```bash
+python <skill-root>/scripts/publish_github_pages.py \
+  --repo owner/repo \
+  --source dist \
+  --version-key <result_source_sha> \
+  --producer h5-game-prototype-agent \
+  --require-relative-entrypoint \
+  --json
+```
+
+The publisher writes only the dedicated `gh-pages` delivery branch. It never edits the canonical experiment branch, protected Ledger, Candidate refs, or lifecycle state. Each version lives under `play/<result_source_sha>/`; the same version key with different bytes is rejected rather than overwritten. The repository root redirects to the latest published version.
+
+The publisher verifies that GitHub Pages serves the expected immutable marker and index, but that is deployment evidence only. Open the returned HTTPS URL in a real browser and rerun the normal player-input smoke before returning `playable.kind=SHAREABLE_URL` with `verified=true`.
+
+If Pages is unavailable, the repository is private, Pages already uses a different source, permission is insufficient, or deployed gameplay/browser verification fails, do not reconfigure unrelated hosting automatically. Fall back honestly to `LOCAL_URL`, `ARTIFACT_ONLY`, or `MISSING` according to what was actually verified.
+
 ## Repository layout
 
 Verified against the current `siskosun/game-exp` `main` implementation on 2026-09-28: Candidate install/test/build commands run with repository-root `cwd=.`. Project-policy step objects contain only `argv`; `subject.root_path` is not used as a build working directory.
