@@ -101,11 +101,11 @@ python <skill-root>/scripts/publish_github_pages.py \
   --json
 ```
 
-The publisher writes only the dedicated `gh-pages` delivery branch. It never edits the canonical experiment branch, protected Ledger, Candidate refs, or lifecycle state. Each version lives under `play/<result_source_sha>/`; the same version key with different bytes is rejected rather than overwritten. The repository root redirects to the latest published version.
+The publisher writes only the dedicated `gh-pages` delivery branch, then dispatches the managed `.github/workflows/game-exp-pages.yml` workflow from the repository default branch. It never edits the canonical experiment branch, protected Ledger, Candidate refs, or lifecycle state. Each version lives under `play/<result_source_sha>/`; the same version key with different bytes is rejected rather than overwritten. The repository root redirects to the latest published version.
 
 The publisher verifies that GitHub Pages serves the expected immutable marker and index, but that is deployment evidence only. Open the returned HTTPS URL in a real browser and rerun the normal player-input smoke before returning `playable.kind=SHAREABLE_URL` with `verified=true`.
 
-If Pages is unavailable, the repository is private, Pages already uses a different source, permission is insufficient, or deployed gameplay/browser verification fails, do not reconfigure unrelated hosting automatically. Fall back honestly to `LOCAL_URL`, `ARTIFACT_ONLY`, or `MISSING` according to what was actually verified.
+If Pages is unavailable, the repository is private, the managed Pages workflow is missing, Pages already uses a different configuration, permission is insufficient, or deployed gameplay/browser verification fails, do not reconfigure unrelated hosting automatically. Fall back honestly to `LOCAL_URL`, `ARTIFACT_ONLY`, or `MISSING` according to what was actually verified.
 
 ## Repository layout
 
