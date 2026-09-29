@@ -344,14 +344,6 @@ def ensure_pages(repo: str, branch: str) -> dict[str, Any]:
     return pages
 
 
-def request_pages_build(repo: str) -> None:
-    try:
-        gh_api(f"repos/{repo}/pages/builds", method="POST")
-    except PublishError as exc:
-        if "409" not in str(exc):
-            raise
-
-
 def version_url(pages_html_url: str, version_key: str) -> str:
     base = pages_html_url.rstrip("/") + "/"
     return urllib.parse.urljoin(base, f"play/{version_key}/")
@@ -496,7 +488,6 @@ def publish(
         message=f"Publish playable {version_key}",
     )
     pages = ensure_pages(repo, branch)
-    request_pages_build(repo)
     url = version_url(pages["html_url"], version_key)
     if wait:
         verify_deployment(
