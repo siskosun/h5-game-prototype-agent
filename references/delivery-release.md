@@ -22,7 +22,7 @@ If the user explicitly requests online deployment, handle it as a project-specif
 This path is intentionally narrow. It exists to turn an already-verified static H5 build into a durable cross-device URL without adding another hosting service.
 
 - Requires a public GitHub repository and authenticated `gh`.
-- Uses a dedicated `gh-pages` branch and refuses to replace a different existing Pages configuration.
+- Uses a dedicated `gh-pages` static-version branch plus the managed `.github/workflows/game-exp-pages.yml` Actions deployment workflow; a missing workflow is a setup blocker, not a reason to fall back to legacy Pages builds.
 - Publishes under `play/<result_source_sha>/`; published version paths are immutable.
 - Vite builds must use relative asset paths. New bundled templates set `base: "./"`.
 - The publisher's marker/index check proves deployment identity, not gameplay quality. A real browser player-input smoke on the returned URL is still required before `verified=true`.
