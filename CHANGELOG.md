@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2 - 2026-09-29
+
+- Add a public-repository GitHub Pages publisher for immutable versioned H5 playables under `play/<result_source_sha>/`.
+- Preserve older playable versions, reject version-key byte drift, and verify the served deployment marker before handoff.
+- Make bundled Vite templates subpath-safe with `base: "./"` so versioned project-site URLs load their assets correctly.
+- Let game-exp request this route explicitly while keeping browser/player verification and all human lifecycle gates unchanged.
+
 ## 0.2.1 - 2026-09-29
 
 - Add the game-exp `iteration_delivery` return contract after completed managed implementation passes.
