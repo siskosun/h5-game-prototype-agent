@@ -346,7 +346,7 @@ def ensure_pages(repo: str, branch: str) -> dict[str, Any]:
 
 def request_pages_build(repo: str) -> None:
     try:
-        gh_api(f"repos/{repo}/pages/builds", method="POST", payload={})
+        gh_api(f"repos/{repo}/pages/builds", method="POST")
     except PublishError as exc:
         if "409" not in str(exc):
             raise
