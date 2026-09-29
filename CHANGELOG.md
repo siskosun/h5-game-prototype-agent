@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-09-29
+
+- Add the game-exp `iteration_delivery` return contract after completed managed implementation passes.
+- Distinguish verified shareable URLs, environment-bound local URLs, downloadable artifacts, and an explicit missing-playable state.
+- Bind the handoff to player-visible changes, 1-3 human focus points, producer/build identity, and an optional real prior Candidate.
+- Keep delivery evidence participant-reported; PROBE machine verdicts still cannot create human Review or lifecycle transitions.
+
 ## 0.2.0 - 2026-09-28
 
 - Add completion level `PROBE` beside the existing `SLICE` workflow while keeping task modes independent.
