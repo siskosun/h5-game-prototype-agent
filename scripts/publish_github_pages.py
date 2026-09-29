@@ -20,6 +20,8 @@ from typing import Any
 
 API_VERSION = "2026-03-10"
 DEFAULT_BRANCH = "gh-pages"
+PAGES_WORKFLOW = "game-exp-pages.yml"
+PAGES_WORKFLOW_PATH = ".github/workflows/game-exp-pages.yml"
 SAFE_VERSION_RE = re.compile(r"[A-Za-z0-9._-]{1,96}")
 REPO_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 MAX_BLOB_BYTES = 95 * 1024 * 1024
@@ -309,52 +311,189 @@ def update_pages_branch(
     raise PublishError(f"Pages branch changed concurrently: {last_error}")
 
 
-def ensure_pages(repo: str, branch: str) -> dict[str, Any]:
+def ensure_pages(
+    repo: str,
+    branch: str,
+    default_branch: str,
+) -> dict[str, Any]:
+    workflow = _contents(repo, default_branch, PAGES_WORKFLOW_PATH)
+    if workflow is None:
+        raise PublishError(
+            f"managed Pages workflow missing on {default_branch}: {PAGES_WORKFLOW_PATH}; "
+            "upgrade/bootstrap game-exp before publishing a shareable playable"
+        )
+
     pages = gh_api(f"repos/{repo}/pages", allow_statuses={404})
     if isinstance(pages, dict) and pages.get("_http_status") == 404:
-        pages = gh_api(
+        gh_api(
             f"repos/{repo}/pages",
             method="POST",
-            payload={
-                "build_type": "legacy",
-                "source": {"branch": branch, "path": "/"},
-            },
+            payload={"build_type": "workflow"},
         )
+        pages = gh_api(f"repos/{repo}/pages")
+
     if not isinstance(pages, dict):
         raise PublishError("GitHub Pages response is invalid")
-    source = pages.get("source")
-    if not isinstance(source, dict):
-        raise PublishError(
-            "repository already uses a Pages configuration without a branch source; "
-            "refusing to replace it automatically"
-        )
-    if source.get("branch") != branch or source.get("path") != "/":
-        raise PublishError(
-            "repository already has a different GitHub Pages source; "
-            "refusing to reconfigure it automatically"
-        )
+
     build_type = pages.get("build_type")
-    if build_type not in (None, "legacy"):
-        raise PublishError(
-            f"repository Pages build type is {build_type!r}; refusing to replace it automatically"
+    if build_type != "workflow":
+        source = pages.get("source")
+        owned_legacy_source = (
+            build_type in (None, "legacy")
+            and isinstance(source, dict)
+            and source.get("branch") == branch
+            and source.get("path") == "/"
+            and _contents(repo, branch, "latest.json") is not None
         )
+        if not owned_legacy_source:
+            raise PublishError(
+                "repository already has a different GitHub Pages configuration; "
+                "refusing to replace it automatically"
+            )
+        gh_api(
+            f"repos/{repo}/pages",
+            method="PUT",
+            payload={"build_type": "workflow"},
+        )
+        pages = gh_api(f"repos/{repo}/pages")
+        if not isinstance(pages, dict) or pages.get("build_type") != "workflow":
+            raise PublishError("failed to switch game-exp Pages site to workflow deployment")
+
     html_url = pages.get("html_url")
     if not isinstance(html_url, str) or not html_url.startswith("https://"):
         raise PublishError("GitHub Pages did not provide an HTTPS site URL")
     return pages
 
 
-def request_pages_build(repo: str) -> None:
-    try:
-        gh_api(f"repos/{repo}/pages/builds", method="POST")
-    except PublishError as exc:
-        if "409" not in str(exc):
-            raise
+def _workflow_runs_endpoint(repo: str, default_branch: str) -> str:
+    workflow = urllib.parse.quote(PAGES_WORKFLOW, safe="")
+    branch = urllib.parse.quote(default_branch, safe="")
+    return (
+        f"repos/{repo}/actions/workflows/{workflow}/runs"
+        f"?event=workflow_dispatch&branch={branch}&per_page=20"
+    )
+
+
+def dispatch_pages_workflow(
+    repo: str,
+    *,
+    default_branch: str,
+    version_key: str,
+    wait: bool,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    runs_endpoint = _workflow_runs_endpoint(repo, default_branch)
+    before = gh_api(runs_endpoint)
+    before_ids = {
+        row.get("id")
+        for row in (
+            before.get("workflow_runs", [])
+            if isinstance(before, dict)
+            else []
+        )
+        if isinstance(row, dict)
+    }
+    workflow = urllib.parse.quote(PAGES_WORKFLOW, safe="")
+    gh_api(
+        f"repos/{repo}/actions/workflows/{workflow}/dispatches",
+        method="POST",
+        payload={
+            "ref": default_branch,
+            "inputs": {"version_key": version_key},
+        },
+    )
+    if not wait:
+        return {"status": "DISPATCHED", "id": None, "url": None}
+
+    deadline = time.monotonic() + max(1, timeout_seconds)
+    expected_title = f"game-exp Pages {version_key}"
+    run: dict[str, Any] | None = None
+    while time.monotonic() < deadline:
+        listed = gh_api(runs_endpoint)
+        rows = (
+            listed.get("workflow_runs", [])
+            if isinstance(listed, dict)
+            else []
+        )
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            if row.get("id") in before_ids:
+                continue
+            if row.get("display_title") != expected_title:
+                continue
+            run = row
+            break
+        if run is not None:
+            break
+        time.sleep(2)
+    if run is None:
+        raise PublishError("GitHub Pages workflow dispatch was not observable before timeout")
+
+    run_id = run.get("id")
+    if not isinstance(run_id, int):
+        raise PublishError("GitHub Pages workflow run id is invalid")
+    while time.monotonic() < deadline:
+        current = gh_api(f"repos/{repo}/actions/runs/{run_id}")
+        if not isinstance(current, dict):
+            raise PublishError("GitHub Pages workflow run response is invalid")
+        if current.get("status") == "completed":
+            if current.get("conclusion") != "success":
+                raise PublishError(
+                    "GitHub Pages workflow failed: "
+                    f"{current.get('conclusion') or 'unknown conclusion'} "
+                    f"({current.get('html_url') or run_id})"
+                )
+            return {
+                "status": "SUCCESS",
+                "id": run_id,
+                "url": current.get("html_url"),
+            }
+        time.sleep(3)
+    raise PublishError("GitHub Pages workflow did not complete before timeout")
 
 
 def version_url(pages_html_url: str, version_key: str) -> str:
     base = pages_html_url.rstrip("/") + "/"
     return urllib.parse.urljoin(base, f"play/{version_key}/")
+
+
+def deployment_matches(
+    url: str,
+    *,
+    version_key: str,
+    payload_digest: str,
+) -> bool:
+    marker_url = urllib.parse.urljoin(url, "_game_exp_build.json")
+    try:
+        request = urllib.request.Request(
+            marker_url + "?v=" + payload_digest[:16],
+            headers={
+                "User-Agent": "game-exp-playable-publisher/1",
+                "Cache-Control": "no-cache",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=10) as response:
+            marker = json.loads(response.read().decode("utf-8"))
+        if (
+            marker.get("version_key") != version_key
+            or marker.get("payload_sha256") != payload_digest
+        ):
+            return False
+        index_request = urllib.request.Request(
+            url + "?v=" + payload_digest[:16],
+            headers={"User-Agent": "game-exp-playable-publisher/1"},
+        )
+        with urllib.request.urlopen(index_request, timeout=10) as response:
+            return bool(response.read(4096))
+    except (
+        OSError,
+        ValueError,
+        urllib.error.URLError,
+        urllib.error.HTTPError,
+        PublishError,
+    ):
+        return False
 
 
 def verify_deployment(
@@ -364,40 +503,17 @@ def verify_deployment(
     payload_digest: str,
     timeout_seconds: int,
 ) -> None:
-    marker_url = urllib.parse.urljoin(url, "_game_exp_build.json")
     deadline = time.monotonic() + max(1, timeout_seconds)
-    last_error = "not attempted"
     while time.monotonic() < deadline:
-        probe = marker_url + "?v=" + payload_digest[:16]
-        try:
-            request = urllib.request.Request(
-                probe,
-                headers={
-                    "User-Agent": "game-exp-playable-publisher/1",
-                    "Cache-Control": "no-cache",
-                },
-            )
-            with urllib.request.urlopen(request, timeout=10) as response:
-                raw = response.read()
-            marker = json.loads(raw.decode("utf-8"))
-            if (
-                marker.get("version_key") == version_key
-                and marker.get("payload_sha256") == payload_digest
-            ):
-                index_request = urllib.request.Request(
-                    url + "?v=" + payload_digest[:16],
-                    headers={"User-Agent": "game-exp-playable-publisher/1"},
-                )
-                with urllib.request.urlopen(index_request, timeout=10) as response:
-                    if not response.read(4096):
-                        raise PublishError("published index.html is empty")
-                return
-            last_error = "served marker does not match this payload"
-        except (OSError, ValueError, urllib.error.URLError, urllib.error.HTTPError, PublishError) as exc:
-            last_error = str(exc)
+        if deployment_matches(
+            url,
+            version_key=version_key,
+            payload_digest=payload_digest,
+        ):
+            return
         time.sleep(3)
     raise PublishError(
-        f"GitHub Pages did not serve the expected immutable build before timeout: {last_error}"
+        "GitHub Pages did not serve the expected immutable build before timeout"
     )
 
 
@@ -423,6 +539,9 @@ def publish(
         raise PublishError(
             "automatic GitHub Pages publishing is limited to public repositories"
         )
+    default_branch = metadata.get("default_branch")
+    if not isinstance(default_branch, str) or not default_branch:
+        raise PublishError("repository default branch is unavailable")
     files = collect_payload(source)
     if require_relative_entrypoint:
         validate_relative_entrypoint(source.expanduser().resolve() / "index.html")
@@ -436,15 +555,32 @@ def publish(
                 raise PublishError(
                     "version-key already exists with a different payload; immutable URLs are never overwritten"
                 )
-            pages = ensure_pages(repo, branch)
+            pages = ensure_pages(repo, branch, default_branch)
             url = version_url(pages["html_url"], version_key)
-            if wait:
-                verify_deployment(
+            workflow_run = {"status": "NOT_NEEDED", "id": None, "url": None}
+            already_live = (
+                wait
+                and deployment_matches(
                     url,
                     version_key=version_key,
                     payload_digest=digest,
+                )
+            )
+            if not already_live:
+                workflow_run = dispatch_pages_workflow(
+                    repo,
+                    default_branch=default_branch,
+                    version_key=version_key,
+                    wait=wait,
                     timeout_seconds=timeout_seconds,
                 )
+                if wait:
+                    verify_deployment(
+                        url,
+                        version_key=version_key,
+                        payload_digest=digest,
+                        timeout_seconds=timeout_seconds,
+                    )
             return {
                 "status": "PASS",
                 "repo": repo,
@@ -454,6 +590,9 @@ def publish(
                 "pages_commit_sha": state[0],
                 "url": url,
                 "marker_url": urllib.parse.urljoin(url, "_game_exp_build.json"),
+                "deployment_mode": "actions-workflow",
+                "workflow_run_id": workflow_run.get("id"),
+                "workflow_url": workflow_run.get("url"),
                 "deployment_verified": bool(wait),
                 "idempotent": True,
             }
@@ -495,9 +634,15 @@ def publish(
         blobs,
         message=f"Publish playable {version_key}",
     )
-    pages = ensure_pages(repo, branch)
-    request_pages_build(repo)
+    pages = ensure_pages(repo, branch, default_branch)
     url = version_url(pages["html_url"], version_key)
+    workflow_run = dispatch_pages_workflow(
+        repo,
+        default_branch=default_branch,
+        version_key=version_key,
+        wait=wait,
+        timeout_seconds=timeout_seconds,
+    )
     if wait:
         verify_deployment(
             url,
@@ -514,6 +659,9 @@ def publish(
         "pages_commit_sha": commit_sha,
         "url": url,
         "marker_url": urllib.parse.urljoin(url, "_game_exp_build.json"),
+        "deployment_mode": "actions-workflow",
+        "workflow_run_id": workflow_run.get("id"),
+        "workflow_url": workflow_run.get("url"),
         "deployment_verified": bool(wait),
         "idempotent": False,
     }

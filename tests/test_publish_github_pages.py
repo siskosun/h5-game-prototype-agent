@@ -89,7 +89,11 @@ class GitHubPagesPublisherTests(unittest.TestCase):
             (root / "index.html").write_text("<html>ok</html>", encoding="utf-8")
             digest = publisher.payload_sha256(publisher.collect_payload(root))
             with (
-                patch.object(publisher, "gh_api", return_value={"private": False}),
+                patch.object(
+                    publisher,
+                    "gh_api",
+                    return_value={"private": False, "default_branch": "main"},
+                ),
                 patch.object(
                     publisher,
                     "_branch_state",
@@ -105,6 +109,12 @@ class GitHubPagesPublisherTests(unittest.TestCase):
                     "ensure_pages",
                     return_value={"html_url": "https://alice.github.io/demo/"},
                 ),
+                patch.object(
+                    publisher,
+                    "deployment_matches",
+                    return_value=True,
+                ),
+                patch.object(publisher, "dispatch_pages_workflow") as dispatch,
                 patch.object(publisher, "verify_deployment") as verify,
                 patch.object(publisher, "_blob") as blob,
             ):
@@ -117,14 +127,110 @@ class GitHubPagesPublisherTests(unittest.TestCase):
             self.assertTrue(result["idempotent"])
             self.assertTrue(result["deployment_verified"])
             blob.assert_not_called()
-            verify.assert_called_once()
+            dispatch.assert_not_called()
+            verify.assert_not_called()
+            self.assertEqual(result["deployment_mode"], "actions-workflow")
+
+    def test_legacy_owned_pages_site_migrates_to_workflow(self):
+        calls = []
+
+        def fake_api(endpoint, *, method="GET", payload=None, allow_statuses=None):
+            calls.append((endpoint, method, payload))
+            if endpoint.endswith("/pages") and method == "GET":
+                get_count = sum(
+                    1
+                    for item in calls
+                    if item[0].endswith("/pages") and item[1] == "GET"
+                )
+                if get_count == 1:
+                    return {
+                        "build_type": "legacy",
+                        "source": {"branch": "gh-pages", "path": "/"},
+                        "html_url": "https://alice.github.io/demo/",
+                    }
+                return {
+                    "build_type": "workflow",
+                    "html_url": "https://alice.github.io/demo/",
+                }
+            if endpoint.endswith("/pages") and method == "PUT":
+                self.assertEqual(payload, {"build_type": "workflow"})
+                return {}
+            raise AssertionError((endpoint, method, payload))
+
+        with (
+            patch.object(
+                publisher,
+                "_contents",
+                side_effect=[
+                    {"path": publisher.PAGES_WORKFLOW_PATH},
+                    {"path": "latest.json"},
+                ],
+            ),
+            patch.object(publisher, "gh_api", side_effect=fake_api),
+        ):
+            pages = publisher.ensure_pages("alice/demo", "gh-pages", "main")
+        self.assertEqual(pages["build_type"], "workflow")
+        self.assertTrue(
+            any(method == "PUT" for _endpoint, method, _payload in calls)
+        )
+
+    def test_pages_workflow_dispatch_binds_version_and_waits_for_success(self):
+        sequence = [
+            {"workflow_runs": [{"id": 1, "display_title": "old"}]},
+            {},
+            {
+                "workflow_runs": [
+                    {
+                        "id": 2,
+                        "display_title": "game-exp Pages abc123",
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "status": "completed",
+                "conclusion": "success",
+                "html_url": "https://github.com/alice/demo/actions/runs/2",
+            },
+        ]
+
+        def fake_api(endpoint, *, method="GET", payload=None, allow_statuses=None):
+            value = sequence.pop(0)
+            if method == "POST":
+                self.assertEqual(
+                    payload,
+                    {"ref": "main", "inputs": {"version_key": "abc123"}},
+                )
+            return value
+
+        with (
+            patch.object(publisher, "gh_api", side_effect=fake_api),
+            patch.object(publisher.time, "sleep"),
+        ):
+            result = publisher.dispatch_pages_workflow(
+                "alice/demo",
+                default_branch="main",
+                version_key="abc123",
+                wait=True,
+                timeout_seconds=30,
+            )
+        self.assertEqual(result["status"], "SUCCESS")
+        self.assertEqual(result["id"], 2)
+        self.assertEqual(
+            result["url"],
+            "https://github.com/alice/demo/actions/runs/2",
+        )
 
     def test_existing_version_key_never_overwrites_different_payload(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "index.html").write_text("<html>new</html>", encoding="utf-8")
             with (
-                patch.object(publisher, "gh_api", return_value={"private": False}),
+                patch.object(
+                    publisher,
+                    "gh_api",
+                    return_value={"private": False, "default_branch": "main"},
+                ),
                 patch.object(
                     publisher,
                     "_branch_state",
