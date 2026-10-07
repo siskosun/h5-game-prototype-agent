@@ -63,3 +63,24 @@ python dev/build_skill_zip.py
 ```
 
 Template integration is also exercised in CI on Windows and Linux.
+
+The `probe-browser` job runs all three scenarios, then stages evidence with:
+
+```bash
+python dev/check_probe_e2e.py
+python dev/stage_probe_evidence.py
+```
+
+Download `probe-evidence-<sha>` from the Actions run. It contains `normal/`,
+`spam-wins/`, and `spam-intended/`, each with the unchanged `report.json`, every
+referenced PNG in `screenshots/`, and the referenced WebM in `video/`.
+`manifest.json` maps original paths to artifact paths and records file sizes and
+SHA-256 digests. To resolve a report's `.probe/...` reference after extraction,
+replace `.probe/` with that scenario's directory name.
+
+Only these explicit files are copied; other hidden files and unreferenced media
+are excluded. Missing, empty, or disallowed evidence in any scenario fails the
+staging step. Staging and upload still run after a failed probe, retaining any
+available evidence plus manifest errors for diagnosis. Uploading no files is an
+error. Machine verdicts retain their existing meaning; successful CI is not a
+human playtest PASS.

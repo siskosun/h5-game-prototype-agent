@@ -49,6 +49,13 @@ def report(path: Path) -> dict:
 
 def main() -> int:
     normal = ROOT / "templates" / "probe"
+    bad = ROOT / "tests" / "fixtures" / "spam-wins"
+    intended = ROOT / "tests" / "fixtures" / "spam-intended"
+    # A failed rerun must not leave evidence from an earlier run looking current.
+    for scenario in (normal, bad, intended):
+        evidence = scenario / ".probe"
+        if evidence.exists():
+            shutil.rmtree(evidence)
     ensure_frozen(normal)
     run([NPM, "ci"], normal)
     run([NPM, "run", "probe:check"], normal)
@@ -65,7 +72,6 @@ def main() -> int:
     if report(normal).get("agent_verdict") != "READY_FOR_PLAYTEST":
         raise SystemExit("normal probe must be READY_FOR_PLAYTEST")
 
-    bad = ROOT / "tests" / "fixtures" / "spam-wins"
     ensure_frozen(bad)
     run([NPM, "ci"], bad)
     run([NPM, "run", "probe:check"], bad, expected={1})
@@ -74,7 +80,6 @@ def main() -> int:
     if bad_report.get("agent_verdict") != "MACHINE_REJECT" or spam.get("status") != "FAIL":
         raise SystemExit("spam-wins fixture was not rejected")
 
-    intended = ROOT / "tests" / "fixtures" / "spam-intended"
     ensure_frozen(intended)
     run([NPM, "ci"], intended)
     run([NPM, "run", "probe:check"], intended)
