@@ -2,6 +2,7 @@ node_modules/
 dist/
 .probe/
 .prototype/
+artifacts/
 __pycache__/
 *.pyc
 *.log

@@ -51,14 +51,15 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Probe E2E and known-bad fixtures
         run: python dev/check_probe_e2e.py
+      - name: Stage and verify probe evidence
+        if: always()
+        run: python dev/stage_probe_evidence.py
       - name: Upload probe evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: probe-evidence-${{ github.sha }}
-          if-no-files-found: warn
+          if-no-files-found: error
+          include-hidden-files: false
           retention-days: 7
-          path: |
-            templates/probe/.probe/
-            tests/fixtures/spam-wins/.probe/
-            tests/fixtures/spam-intended/.probe/
+          path: artifacts/probe-evidence/
