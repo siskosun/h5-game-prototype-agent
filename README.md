@@ -1,6 +1,16 @@
-# h5-game-prototype-agent 0.2.0
+# h5-game-prototype-agent 0.2.3
 
 A model-agnostic Skill for building and verifying 2D H5/web game prototypes.
+
+## 0.2.3
+
+Changes since 0.2.0 (see [CHANGELOG](CHANGELOG.md)):
+
+- **0.2.1:** add the game-exp `iteration_delivery` return contract, including playable availability, player-visible changes, human focus points, and producer/build identity.
+- **0.2.2:** publish immutable H5 playables at `play/<result_source_sha>/` in public-repository GitHub Pages, preserve older versions, reject version-key byte drift, and make bundled Vite templates subpath-safe.
+- **0.2.3:** deploy through the managed game-exp GitHub Actions Pages workflow, bind to the requested version's exact run, and verify the served immutable marker/page after successful deployment.
+
+Delivery evidence remains participant-reported; machine verdicts do not create human Review or lifecycle transitions.
 
 ## Two completion levels
 
@@ -63,6 +73,7 @@ python dev/build_skill_zip.py
 ```
 
 Template integration is also exercised in CI on Windows and Linux.
+The unit tests check that README's title and current version section, and the latest CHANGELOG entry, match `VERSION`.
 
 The `probe-browser` job runs all three scenarios, then stages evidence with:
 
