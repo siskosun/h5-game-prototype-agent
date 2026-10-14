@@ -1,0 +1,67 @@
+name: Publish stable Skill Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
+
+permissions:
+  contents: read
+
+concurrency:
+  group: published-stable-skill-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '26.10.0'
+      - name: Verify packaged H5 Skill
+        run: |
+          python -m unittest discover -s tests -v
+          python dev/check_templates.py
+          python dev/build_skill_zip.py
+      - name: Validate stable release name and source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid semantic version' >&2; exit 1; }
+          test -s dist/skill.zip
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          with ZipFile("dist/skill.zip") as z:
+              assert z.testzip() is None
+              assert len([n for n in z.namelist() if n.endswith("/SKILL.md") or n == "SKILL.md"]) == 1
+          PY
+      - name: Create version-tagged Release from this exact tested commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          tag="v${version}"
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" >/dev/null 2>&1; then
+            echo "Tag ${tag} already exists; refusing to replace or retarget." >&2
+            exit 1
+          fi
+          gh release create "${tag}" dist/skill.zip \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --title "${tag}" \
+            --notes "Stable source and Skill artifact built/tested from commit ${GITHUB_SHA}. Opportunity validation handoff is optional context; machine results never grant human Review or game-exp lifecycle authority."

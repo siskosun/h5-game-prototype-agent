@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.4 - 2026-10-14
+
+- Publish optional game-opportunity provenance: keep stable research identifiers and distinguish market interest from the frozen H5 PROBE question.
+- Record only real, eligible player aggregates as research; machine QA/Playwright results do not become player preferences or human Review.
+- Preserve existing PROBE fields, game-exp handoff schemas and lifecycle authority. Add version-gated stable Skill Release publishing after CI checks.
+
+
 ## 0.2.3 - 2026-09-29
 
 - Move GitHub Pages deployment from the legacy Pages build queue to the managed game-exp GitHub Actions Pages workflow.
