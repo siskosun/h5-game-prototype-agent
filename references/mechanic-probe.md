@@ -122,7 +122,7 @@ Do not fabricate participation. Until a real human record exists, `human_verdict
 
 ### Optional preregistered external player test
 
-When upstream `game-opportunity` provides a v0.4 local plan/digest for a **real player-behavior test**, preserve its plan identifier and exact metrics in ordinary context. Real testers may provide one anonymized aggregate of **unique eligible participants**, observed action count, window and sampling limitations after authorized sessions. An agent's QA runs, Playwright input, mock users and AI preference guesses are **not** real participants. Do not silently broaden the H5 frozen hypothesis or kill criteria to match a market threshold. Link source/build identity back to the opportunity record only as reported evidence; human PROBE verdict and game-exp Review remain separate.
+When upstream `game-opportunity` provides a v0.4 local plan/digest for a **real player-behavior test**, preserve its plan identifier and exact metrics in ordinary context. Real testers may provide one anonymized aggregate of **unique eligible participants**, observed action count, window and sampling limitations after authorized sessions. An agent's QA runs, Playwright input, mock users and AI preference guesses are not real participants. Do not silently broaden the H5 frozen hypothesis or kill criteria to match a market threshold. Link source/build identity back to the opportunity record only as reported evidence; human PROBE verdict and game-exp Review remain separate.
 
 ## Verdict derivation
 
