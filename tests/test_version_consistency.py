@@ -29,5 +29,14 @@ class VersionConsistencyTests(unittest.TestCase):
         self.assertEqual(latest.group(1), version, "CHANGELOG.md: latest release differs from VERSION")
 
 
+    def test_opportunity_v04_evidence_does_not_override_probe_and_review(self):
+        integration = (ROOT / "references/game-exp-integration.md").read_text(encoding="utf-8")
+        probe = (ROOT / "references/mechanic-probe.md").read_text(encoding="utf-8")
+        for phrase in ("game-opportunity", "unique eligible", "MEETS_DECLARED_", "human Review"):
+            self.assertIn(phrase.casefold(), integration.casefold())
+        self.assertIn("not real participants", probe)
+        self.assertIn("Do not add new mandatory", integration)
+
+
 if __name__ == "__main__":
     unittest.main()
