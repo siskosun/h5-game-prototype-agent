@@ -34,6 +34,10 @@ Use the repository/project policy's pinned Node version when game-exp specifies 
 
 If a prior `game-opportunity` card exists, keep its identifier/source link in ordinary context and distinguish its uncertainty from this PROBE's frozen question. A changed stage requires an explicitly new next-stage hypothesis; do not interpret previous demand/interest evidence as a gameplay PASS. Keep original card evidence ordinary and read-only; neither the card nor PROBE creates a game-exp Ledger mutation or human Review decision.
 
+## Optional opportunity player-behavior evidence (v0.4)
+
+If `game-opportunity` supplies a predeclared research plan and aggregate, keep the opportunity/plan identifier and source hash in ordinary context. Count an observed **unique eligible player numerator/denominator only when a real, authorized human session or platform dataset supports it**; record target population, segment, window, participant interventions and known data limitations. Never reinterpret simulated browser QA, seeded retries or H5 machine `READY_FOR_PLAYTEST` as actual player choice/retention. Upstream `MEETS_DECLARED_*_SIGNAL_NOT_A_DECISION` is non-authoritative, not a frozen PROBE result, game-exp trusted Candidate observation or human Review PASS. Do not add new mandatory `probe_card.md`, `iteration_delivery`, Manifest or Ledger fields; use the existing source SHA, build identity and optional ordinary evidence citations.
+
 ## Manifest hypothesis
 
 When binding:
