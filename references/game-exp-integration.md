@@ -30,6 +30,10 @@ Candidate output is `dist/`, and `dist/index.html` must exist.
 
 Use the repository/project policy's pinned Node version when game-exp specifies one. The current validated example uses Node 26.10.0.
 
+## Opportunity-to-PROBE provenance
+
+If a prior `game-opportunity` card exists, keep its identifier/source link in ordinary context and distinguish its uncertainty from this PROBE's frozen question. A changed stage requires an explicitly new next-stage hypothesis; do not interpret previous demand/interest evidence as a gameplay PASS. Keep original card evidence ordinary and read-only; neither the card nor PROBE creates a game-exp Ledger mutation or human Review decision.
+
 ## Manifest hypothesis
 
 When binding:

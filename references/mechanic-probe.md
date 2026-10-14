@@ -23,6 +23,10 @@ python scripts/probe_log.py search KEYWORD
 
 If a similar probe exists, state the meaningful difference or the prior record's `revisit_when` condition that justifies retrying. Do not repeat a failed idea without new information.
 
+## Optional upstream opportunity card
+
+An externally supplied `game-opportunity` card is research context, never a required precondition for H5 PROBE. Keep its stable opportunity ID/source link and verified revision in ordinary brief context. If the card and PROBE test exactly the same falsifiable hypothesis and stop condition, preserve the precise wording when writing the existing `probe_card.md`. If the stage has changed (e.g., from player interest to mechanic experience), explicitly define the new testable hypothesis and kill criteria instead of silently treating demand evidence as proof of gameplay. Do not add unsupported `probe_card.md` fields or create a second probe history. The existing `scripts/probe_log.py` searches the selected local `probes.jsonl`; it is not a cross-project opportunity database. Return verified PROBE evidence for optional append to the upstream card; no automatic user promotion.
+
 ## Freeze the question
 
 The probe card contains:
