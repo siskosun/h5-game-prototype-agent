@@ -1,6 +1,10 @@
-# h5-game-prototype-agent 0.2.3
+# h5-game-prototype-agent 0.2.4
 
 A model-agnostic Skill for building and verifying 2D H5/web game prototypes.
+
+## 0.2.4
+
+This maintenance release includes optional research handoff from game-opportunity. Keep player-interest evidence separate from the frozen H5 PROBE question. Actual human behavioral aggregates are evidence, never machine QA or game-exp Review authority. Published stable Skill Releases are built from a tested version commit; direct build/debug/repair still bypasses upstream research.
 
 ## 0.2.3
 
