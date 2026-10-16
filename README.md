@@ -1,6 +1,16 @@
-# h5-game-prototype-agent 0.2.4
+# h5-game-prototype-agent 0.2.5
 
 A model-agnostic Skill for building and verifying 2D H5/web game prototypes.
+
+## 0.2.5
+
+This maintenance update makes H5 PROBE evidence easier to audit:
+
+- Include a working-source `source_tree_sha256` alongside existing Git `source_sha` and `build_id`. The fingerprint includes dirty and untracked game source while excluding generated folders only at project root, not inside `src/`.
+- Mark PROBE browser results `UNCERTAIN` when the source tree changes during the run. Validate a report against the current source with `python scripts/validate_probe_report.py .probe/report.json --card probe_card.md --source-root .`. Legacy reports without the field remain readable but do not gain new guarantees.
+- Add exact time-window edge tests and require a focused known-bad versus semantically-equivalent test check for consequential mechanics. No separate repair Agent is added.
+
+The fingerprint and tests are participant-reported verification context, not proof that the bundled build was produced from that source and not game-exp `TRUSTED_OBSERVED` or human Review authorization.
 
 ## 0.2.4
 

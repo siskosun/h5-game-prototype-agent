@@ -64,4 +64,4 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --target "${GITHUB_SHA}" \
             --title "${tag}" \
-            --notes "Stable source and Skill artifact built/tested from commit ${GITHUB_SHA}. Opportunity validation handoff is optional context; machine results never grant human Review or game-exp lifecycle authority."
+            --notes "Stable source and Skill artifact built/tested from commit ${GITHUB_SHA}. This release adds H5 PROBE source-tree fingerprinting, nested-path handling and boundary-rule calibration. Local machine checks never grant human Review or game-exp lifecycle authority."
