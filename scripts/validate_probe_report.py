@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,7 +22,8 @@ def load_card_module():
     return module
 
 
-def validate(report: dict, card_path: Path, evidence_root: Path | None = None) -> list[str]:
+def validate(report: dict, card_path: Path, evidence_root: Path | None = None,
+             source_root: Path | None = None) -> list[str]:
     errors: list[str] = []
     evidence_root = evidence_root or card_path.parent
     agent = report.get("agent_verdict")
@@ -57,6 +59,23 @@ def validate(report: dict, card_path: Path, evidence_root: Path | None = None) -
             errors.append("READY_FOR_PLAYTEST cannot contain failed degenerate checks")
         if any(not c.get("evidence") for c in checks):
             errors.append("READY_FOR_PLAYTEST requires evidence for every check")
+    if "source_tree_sha256" in report:
+        expected = report["source_tree_sha256"]
+        if not isinstance(expected, str) or re.fullmatch(r"[0-9a-f]{64}", expected) is None:
+            errors.append("source_tree_sha256 must be a lowercase SHA-256 hex string")
+        else:
+            try:
+                script = Path(__file__).with_name("source_tree_identity.py")
+                spec = importlib.util.spec_from_file_location("source_tree_identity", script)
+                module = importlib.util.module_from_spec(spec)
+                assert spec.loader is not None
+                spec.loader.exec_module(module)
+                current = module.source_tree_sha256(source_root or card_path.parent)
+            except (OSError, ValueError) as exc:
+                errors.append(f"cannot verify source_tree_sha256: {exc}")
+            else:
+                if expected != current:
+                    errors.append("source_tree_sha256 differs from current working-source bytes")
     return errors
 
 
@@ -64,10 +83,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("report", type=Path)
     parser.add_argument("--card", type=Path, required=True)
+    parser.add_argument("--source-root", type=Path,
+                        help="working source root, defaults to the directory containing --card")
     args = parser.parse_args()
     try:
         report = json.loads(args.report.read_text(encoding="utf-8"))
-        errors = validate(report, args.card, args.card.parent)
+        errors = validate(report, args.card, args.card.parent, args.source_root)
     except (OSError, json.JSONDecodeError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
