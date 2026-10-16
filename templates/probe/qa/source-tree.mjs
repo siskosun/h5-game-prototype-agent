@@ -15,7 +15,7 @@ export function sourceTreeSha256(root) {
   function visit(current) {
     const names = readdirSync(current).sort((a, b) => Buffer.compare(Buffer.from(a, "utf8"), Buffer.from(b, "utf8")));
     for (const name of names) {
-      if (SOURCE_EXCLUDES.has(name)) continue;
+      if (current === root && SOURCE_EXCLUDES.has(name)) continue;
       const full = join(current, name);
       const rel = relative(root, full).replaceAll("\\", "/");
       const entry = lstatSync(full);

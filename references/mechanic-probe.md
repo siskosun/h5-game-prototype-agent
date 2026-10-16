@@ -101,7 +101,7 @@ For a rule that changes scoring, legal actions, time windows, terminal outcomes 
 
 ## Working-source identity
 
-New PROBE reports include `source_tree_sha256` alongside legacy `source_sha` (often Git HEAD) and `build_id`. Hash source and configuration bytes from the project root, including uncommitted files but excluding generated build/evidence directories. Validate `--source-root .` after QA to detect later changes. Legacy reports without the field are still readable but lack content-binding. This fingerprint does not establish a trusted Candidate identity, nor prove that a build was generated from the source.
+New PROBE reports include `source_tree_sha256` alongside legacy `source_sha` (often Git HEAD) and `build_id`. Hash source and configuration bytes from the project root, including uncommitted files but excluding only conventional generated directories directly under the project root (not same-named nested source folders). Validate `--source-root .` after QA to detect later changes. Legacy reports without the field are still readable but lack content-binding. This fingerprint does not establish a trusted Candidate identity, nor prove that a build was generated from the source.
 
 ## Evidence source
 

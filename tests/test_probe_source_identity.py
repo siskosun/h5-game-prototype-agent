@@ -70,6 +70,42 @@ class SourceIdentityTests(unittest.TestCase):
                 (root / name / "generated.json").write_text("new", encoding="utf-8")
             self.assertEqual(clean, identity.source_tree_sha256(root))
 
+    def test_nested_generated_name_is_real_source(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.fixture(root)
+            for name in ("artifacts", "dist", ".cache", ".probe", "node_modules"):
+                nested = root / "src" / name
+                nested.mkdir()
+                source = nested / "rule.ts"
+                source.write_text("export const score = 1;", encoding="utf-8")
+                before = identity.source_tree_sha256(root)
+                node_before = node_hash(root)
+                self.assertEqual(node_before.returncode, 0, node_before.stderr)
+                self.assertEqual(node_before.stdout.strip(), before)
+                source.write_text("export const score = 2;", encoding="utf-8")
+                after = identity.source_tree_sha256(root)
+                node_after = node_hash(root)
+                self.assertNotEqual(before, after, f"nested source excluded under {name}")
+                self.assertEqual(node_after.returncode, 0, node_after.stderr)
+                self.assertEqual(node_after.stdout.strip(), after)
+
+    def test_root_exclusion_does_not_hide_source_sibling(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.fixture(root)
+            (root / "artifacts").mkdir()
+            (root / "artifacts" / "generated.json").write_text("A", encoding="utf-8")
+            clean = identity.source_tree_sha256(root)
+            (root / "artifacts" / "generated.json").write_text("B", encoding="utf-8")
+            self.assertEqual(clean, identity.source_tree_sha256(root))
+            (root / "src" / "artifacts").mkdir()
+            nested = root / "src" / "artifacts" / "hidden.ts"
+            nested.write_text("one", encoding="utf-8")
+            before = identity.source_tree_sha256(root)
+            nested.write_text("two", encoding="utf-8")
+            self.assertNotEqual(before, identity.source_tree_sha256(root))
+
     def test_source_symlink_rejected_in_both_languages(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

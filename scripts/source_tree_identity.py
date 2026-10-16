@@ -2,6 +2,7 @@
 """Hash PROBE working-source bytes; advisory only, never trusted Candidate evidence.
 
 The digest excludes generated evidence/build directories but includes untracked source.
+Only top-level generated directories are excluded; nested names remain source-visible.
 Both this module and the PROBE Node runner use UTF-8 bytewise name ordering and
 SHA256(path + NUL + file bytes + NUL) in depth-first traversal order.
 """
@@ -25,7 +26,7 @@ def source_tree_sha256(source_root: Path) -> str:
 
     def visit(directory: Path) -> None:
         for path in sorted(directory.iterdir(), key=lambda child: child.name.encode("utf-8")):
-            if path.name in SOURCE_EXCLUDES:
+            if directory == root and path.name in SOURCE_EXCLUDES:
                 continue
             relative = path.relative_to(root).as_posix()
             if path.is_symlink():
