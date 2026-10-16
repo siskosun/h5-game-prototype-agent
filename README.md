@@ -1,6 +1,10 @@
-# h5-game-prototype-agent 0.2.5
+# h5-game-prototype-agent 0.2.6
 
 A model-agnostic Skill for building and verifying 2D H5/web game prototypes.
+
+## 0.2.6
+
+Read-only independent version awareness: this Skill can check its own published version and the four-Skill vetted compatibility baseline without requiring game-opportunity to be installed. A version-dependent handoff may fail closed, while ordinary standalone prototype work remains available. This is a best-effort invocation check, not automatic installation or game-exp trusted authority.
 
 ## 0.2.5
 
