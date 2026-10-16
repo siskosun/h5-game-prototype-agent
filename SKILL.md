@@ -119,6 +119,10 @@ Do not rewrite the frozen hypothesis/kill criteria during the handoff merely to 
 
 ## 9. Evidence and verdicts
 
+For PROBE, preserve legacy `source_sha` and `build_id`, and record `source_tree_sha256` for the actual working-source/configuration bytes including uncommitted code. Validate new reports using `python scripts/validate_probe_report.py .probe/report.json --card probe_card.md --source-root .`. A later source edit invalidates the new content check. Historical reports without the field stay legacy-compatible without acquiring new guarantees. The field is participant-reported and never game-exp `TRUSTED_OBSERVED` evidence.
+
+For consequential rules (scoring, time windows, terminal states, resources), calibrate the test against a disposable known-bad behavior and a semantically correct alternate implementation. Do not make mutation testing mandatory for small UI changes.
+
 For PROBE:
 
 - `agent_verdict`: `READY_FOR_PLAYTEST | MACHINE_REJECT | UNCERTAIN`;

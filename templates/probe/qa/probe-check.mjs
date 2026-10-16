@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { extname, join, relative, resolve } from "node:path";
 import { chromium } from "playwright";
 import { runPlayerPath } from "./player-path.mjs";
+import { sourceTreeSha256 } from "./source-tree.mjs";
 
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
@@ -70,6 +71,7 @@ async function startStaticServer() {
 }
 
 const card = parseCard();
+const sourceTreeAtStart = sourceTreeSha256(ROOT);
 const viewport = card.target_viewport || { width: 390, height: 844 };
 const inputMode = card.input_mode || "mouse";
 const playerSource = inputMode === "touch" ? "EMULATED_TOUCH" : "PLAYER";
@@ -257,12 +259,16 @@ try {
   videoPath = relative(ROOT, actual).replaceAll("\\", "/");
 } catch {}
 
+const sourceChangedDuringRun = sourceTreeSha256(ROOT) !== sourceTreeAtStart;
 const inconclusive = checks.some((x) => x.status === "INCONCLUSIVE");
 const failures = checks.filter((x) => x.status === "FAIL");
 const degenerateFailures = failures.filter((x) => x.name.startsWith("degenerate_"));
 let agentVerdict = "READY_FOR_PLAYTEST";
 const reasons = [];
-if (inconclusive || harnessFailure) {
+if (sourceChangedDuringRun) {
+  agentVerdict = "UNCERTAIN";
+  reasons.push({ class: "HARNESS", message: "Working source changed during browser QA; evidence cannot identify one source tree." });
+} else if (inconclusive || harnessFailure) {
   agentVerdict = "UNCERTAIN";
   reasons.push({ class: "HARNESS", message: "One or more browser checks were inconclusive." });
 } else if (failures.length) {
@@ -276,6 +282,7 @@ const report = {
   probe_id: card.probe_id,
   card_sha256: card.frozen_sha256,
   source_sha: sourceSha(),
+  source_tree_sha256: sourceTreeAtStart,
   build_id: hashTree(DIST),
   viewport,
   input_mode: inputMode,

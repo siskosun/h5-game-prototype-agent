@@ -95,6 +95,14 @@ Under manual clock + fixed seed:
 
 If an undeclared degenerate strategy wins or produces an outcome equivalent to normal successful play, set `agent_verdict=MACHINE_REJECT`. If that strategy is explicitly listed in `intended_degenerate_strategies`, do not reject it for that reason.
 
+## Consequential-rule oracle calibration
+
+For a rule that changes scoring, legal actions, time windows, terminal outcomes or resources, validate one behavioral boundary against the production core. In a disposable copy outside the project, demonstrate that the same test rejects a deliberately wrong implementation and accepts a semantically equivalent correct implementation. Preserve the exact check and outputs. Do not build a universal mutation system or elevate these local results to game-exp trusted evidence.
+
+## Working-source identity
+
+New PROBE reports include `source_tree_sha256` alongside legacy `source_sha` (often Git HEAD) and `build_id`. Hash source and configuration bytes from the project root, including uncommitted files but excluding only conventional generated directories directly under the project root (not same-named nested source folders). Validate `--source-root .` after QA to detect later changes. Legacy reports without the field are still readable but lack content-binding. This fingerprint does not establish a trusted Candidate identity, nor prove that a build was generated from the source.
+
 ## Evidence source
 
 Use:
