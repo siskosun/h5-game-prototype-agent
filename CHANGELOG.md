@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6 - 2026-10-16
+
+- Add read-only per-Skill published-version and vetted-compatibility preflight, including optional dependent handoff gate.
+- Check exact version, pinned SKILL.md Git blob and optional installed peers; unverified newer releases and unavailable network never auto-promote.
+- Preserve standalone development without version gates and all game-exp trusted lifecycle and human Review authority.
+
+
 ## 0.2.5 - 2026-10-16
 
 - Bind new H5 PROBE evidence to a working-source SHA-256, including dirty/untracked code, while retaining legacy Git SHA and build identity fields.
