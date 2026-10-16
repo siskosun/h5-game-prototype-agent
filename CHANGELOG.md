@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.5 - 2026-10-16
+
+- Bind new H5 PROBE evidence to a working-source SHA-256, including dirty/untracked code, while retaining legacy Git SHA and build identity fields.
+- Detect source modifications during browser QA and classify the resulting evidence as UNCERTAIN; support optional source-tree verification in the PROBE report validator without invalidating legacy reports.
+- Prevent nested game-source folders named `artifacts`, `dist`, `.probe`, etc. from being incorrectly skipped by the source fingerprint.
+- Add a production-core time-window boundary regression and document disposable known-bad plus semantically-equivalent oracle calibration for consequential mechanics.
+- Keep the game-exp trusted evaluator, Review, PROMISING, selection and other human-owned gates unchanged.
+
+
 ## 0.2.4 - 2026-10-14
 
 - Publish optional game-opportunity provenance: keep stable research identifiers and distinguish market interest from the frozen H5 PROBE question.
