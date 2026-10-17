@@ -100,6 +100,19 @@ For a reproducible bug, capture failing evidence first, apply the smallest respo
 
 Use the cheapest sufficient check for each claim, but never substitute a logic test for browser input/layout behavior or an automated policy for human experience.
 
+## Optional repeated-strategy diagnostics
+
+When a mechanic is supposed to require observation, timing or route choice,
+and a trivial repeatable policy might erase that decision, read
+[dominant strategy probes](references/dominant-strategy-probes.md).
+Use scripts/run_strategy_probes.mjs against a project-provided adapter
+to the SAME production core. Test fixed seeds with idle, jump spam,
+edge camping, tiny movement and relevant intentional play. Declare
+project-specific ceilings before interpreting a shortcut as a risk.
+Preserve source identity, policy, seed and action traces. An inconclusive
+adapter or missing ceiling is not PASS, and a headless result is not a
+human fun verdict or browser-input test. Do not impose this on unrelated
+narrow bugfixes or release-only work.
 ## 7. Browser evidence
 
 For player-facing browser behavior, verify at the browser layer:

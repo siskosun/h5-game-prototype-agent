@@ -27,6 +27,8 @@ jobs:
           node-version: "26.10.0"
       - name: Python unit tests
         run: python -m unittest discover -s tests -v
+      - name: Dominant strategy runner regression
+        run: node --test tests/test_strategy_probes.mjs
       - name: Template integration
         run: python dev/check_templates.py
       - name: Runtime skill package
