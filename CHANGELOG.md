@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased - 2026-10-17
+
+- Add an opt-in seeded, production-core-based adversarial strategy runner for blind jump repetition, fixed-direction movement, edge camping, micro-scouting, idle and dash spam.
+- Record source identity, scenario/seed, policy action traces and game-specific success ceilings without confusing machine results with browser or human preference evidence.
+- Add six deterministic fixture regressions and run them in both cross-platform CI jobs. Preserve all existing PROBE, SLICE, game-exp gates, stable release version 0.2.6 and unrelated tools.
+
 ## 0.2.6 - 2026-10-16
 
 - Add read-only per-Skill published-version and vetted-compatibility preflight, including optional dependent handoff gate.
