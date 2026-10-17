@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source_id": "REPLACE_WITH_EXACT_TESTED_SOURCE_SHA_OR_ARTIFACT_HASH",
+  "adapter": "../test/strategy_probe_adapter.mjs",
+  "dt_ms": 16,
+  "max_steps": 600,
+  "scenarios": [
+    {
+      "id": "first_platform",
+      "seeds": [
+        101,
+        202,
+        303
+      ]
+    },
+    {
+      "id": "moving_platform",
+      "seeds": [
+        101,
+        202,
+        303
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "idle",
+      "kind": "idle"
+    },
+    {
+      "name": "hold_jump",
+      "kind": "hold-jump"
+    },
+    {
+      "name": "jump_only",
+      "kind": "jump-pulse",
+      "pulse_every": 10
+    },
+    {
+      "name": "right_jump",
+      "kind": "right-jump",
+      "pulse_every": 10
+    },
+    {
+      "name": "edge_camp",
+      "kind": "edge-camp",
+      "edge_x": 400,
+      "pulse_every": 10
+    },
+    {
+      "name": "micro_scout",
+      "kind": "micro-scout",
+      "half_cycle_ticks": 2,
+      "pulse_every": 10
+    },
+    {
+      "name": "dash_spam",
+      "kind": "dash-spam",
+      "pulse_every": 10,
+      "jump_every": 20
+    }
+  ]
+}
