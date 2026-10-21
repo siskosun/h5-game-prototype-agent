@@ -5,13 +5,13 @@ description: Build, modify, debug, validate, and deliver 2D H5/web mini-games, i
 
 # H5 Game Prototype Agent
 
-## Read-only four-Skill version check
+## Four-Skill startup update
 
-When a task begins and an authorized network/connector tool exists, perform one version-awareness check per task. Local Python Harnesses: `python <skill-root>/scripts/standalone_version_check.py --json`. For an actual dependent handoff to game-exp, run the same command with `--harness codex --peer game-exp --gate --json` (replace codex with the selected Harness). In ChatGPT web, compare the vetted public game-opportunity `compatibility.lock.json` with published stable Releases using an available GitHub connector, without claiming local installed-file verification.
+On the first invocation of this Skill in a task, check all four stable GitHub Releases once. If authorized in the local Codex/Cursor/Qoder Harness, run `python <this-skill-root>/scripts/bootstrap_auto_update.py --harness <codex|cursor|qoder> --apply --json`. This is an explicitly invoked operation, not an automatic import hook. Only vetted compatible stable releases may install; errors remain UNVERIFIED, with standalone work allowed. See [four-Skill update policy](references/four-skill-update.md). On ChatGPT web, perform only a read-only Release check and never claim the hosted Skill was updated. After UPDATED, restart cached Harness/runtime before dependent work.
 
-`UPDATE_AVAILABLE` is a notice, not a mandate to upgrade. `UNVERIFIED` or `INCOMPATIBLE` blocks only version-dependent cross-Skill handoff or trusted mutations; continue ordinary standalone gameplay creation and fixes without making version claims. Network failure never becomes a guessed PASS. Do not install/update Skills silently. A static ZIP cannot enforce invocation when host hooks are absent; this check never substitutes for game-exp status/Doctor, Ledger or human Review.
+## Peer integrity check
 
-Produce a playable, verifiable H5 result rather than a plausible code dump. Keep one authoritative gameplay core and verify only claims that were actually exercised.
+The startup update policy performs the one four-Release check for this task. Before a version-dependent handoff, use `scripts/standalone_version_check.py --harness <codex|cursor|qoder> --peer game-exp --gate --json` to verify actual installed source. Network failure or an unknown peer blocks only the dependent handoff, not standalone H5 development.
 
 ## 1. Choose completion level separately from task mode
 
@@ -189,3 +189,7 @@ npm run probe:check
 - Persistence: [persistence](references/persistence.md)
 - Release evidence: [delivery/release](references/delivery-release.md)
 - Debug/repair: [debug repair](references/debug-repair.md)
+
+## Playable-path completion evidence
+
+For consequential mechanics and near-release work, use [completion checkpoints](references/completion-checkpoints.md) and the optional `scripts/completion_checkpoints.py` consistency validator. Preserve a clean-launch normal-input completion path, dependency-aware invalidation on changed files, and protected regression/revert on an isolated candidate. A valid evidence report does not replace real gameplay or human playtesting.

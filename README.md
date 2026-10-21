@@ -1,6 +1,10 @@
-# h5-game-prototype-agent 0.2.6
+# h5-game-prototype-agent 0.2.7
 
 A model-agnostic Skill for building and verifying 2D H5/web game prototypes.
+
+## 0.2.7
+
+Adds a verified official Release bootstrap for all four game Skills and dependency-aware player-path completion evidence. Local installs require authorization and a vetted compatibility set; ChatGPT web is read-only. Existing H5 PROBE/SLICE and game-exp human gates remain unchanged.
 
 ## 0.2.6
 
