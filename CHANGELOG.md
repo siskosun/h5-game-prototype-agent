@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased - 2026-10-17
+## 0.2.7 - 2026-10-21
+
+- Add verified stable-Release four-Skill update bootstrap with digest validation and fail-closed compatibility policy.
+- Add optional player-path checkpoint evidence validator, changed-file invalidation and isolated regression tests.
+- Retain the previously unreleased adversarial strategy runner below; preserve all existing PROBE/SLICE and human Review gates.
 
 - Add an opt-in seeded, production-core-based adversarial strategy runner for blind jump repetition, fixed-direction movement, edge camping, micro-scouting, idle and dash spam.
 - Record source identity, scenario/seed, policy action traces and game-specific success ceilings without confusing machine results with browser or human preference evidence.
