@@ -5,6 +5,10 @@ description: Build, modify, debug, validate, and deliver 2D H5/web mini-games, i
 
 # H5 Game Prototype Agent
 
+## Four-Skill stable Release update on invocation
+
+At the start of each task, perform a single four-component published stable Release check using [four-Skill update policy](references/four-skill-update.md). In a user-authorized local Codex/Cursor/Qoder harness with an installed game-opportunity bundle, invoke `python <game-opportunity-skill-root>/scripts/auto_update_bundle.py --harness <codex|cursor|qoder> --apply --json`; run this once per task, not recursively when delegating to peer Skills. This user requested automatic stable updates. Respect vetted compatibility lock, official installer, rollback and post-install verification: do not install unvetted latest releases, silently change the active harness, or claim updated before verification. In ChatGPT web, report update availability and manual installation requirement; never claim hosted Skill auto-installation. If updater is missing or remote metadata is unavailable, continue standalone work and mark update status UNVERIFIED. Do not bypass game-exp Doctor or human Review.
+
 ## Read-only four-Skill version check
 
 When a task begins and an authorized network/connector tool exists, perform one version-awareness check per task. Local Python Harnesses: `python <skill-root>/scripts/standalone_version_check.py --json`. For an actual dependent handoff to game-exp, run the same command with `--harness codex --peer game-exp --gate --json` (replace codex with the selected Harness). In ChatGPT web, compare the vetted public game-opportunity `compatibility.lock.json` with published stable Releases using an available GitHub connector, without claiming local installed-file verification.
@@ -189,3 +193,7 @@ npm run probe:check
 - Persistence: [persistence](references/persistence.md)
 - Release evidence: [delivery/release](references/delivery-release.md)
 - Debug/repair: [debug repair](references/debug-repair.md)
+
+## Playable-path completion evidence
+
+For consequential mechanics and near-release work, use [completion checkpoints](references/completion-checkpoints.md) and the optional `scripts/completion_checkpoints.py` consistency validator. Preserve a clean-launch normal-input completion path, dependency-aware invalidation on changed files, and protected regression/revert on an isolated candidate. A valid evidence report does not replace real gameplay or human playtesting.
