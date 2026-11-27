@@ -14,7 +14,7 @@ def digest(v,label):
  if not isinstance(v,str) or not SHA256.fullmatch(v): raise EvidenceError("invalid "+label)
  return v
 def confined(root,rel):
- if not isinstance(rel,str) or not rel or "\\\\" in rel or ":" in rel: raise EvidenceError("invalid relative evidence path")
+ if not isinstance(rel,str) or not rel or "\\" in rel or ":" in rel: raise EvidenceError("invalid relative evidence path")
  p=pathlib.PurePosixPath(rel)
  if p.is_absolute() or any(x in (".","..") for x in p.parts): raise EvidenceError("evidence path escapes workspace")
  f=root.joinpath(*p.parts)
